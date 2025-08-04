@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Worksheet Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 30px rgba(0,0,0,0.1);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header-subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .date-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .date-nav-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .date-nav-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .current-date {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .user-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+
+        /* Progress Section */
+        .progress-section {
+            background: white;
+            padding: 25px;
+            border-bottom: 1px solid #e8eaed;
+        }
+
+        .progress-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #202124;
+        }
+
+        .progress-bar {
+            background: #f1f3f4;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #34a853, #4285f4);
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-weight: 500;
+            color: #5f6368;
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e8eaed 100%);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border-left: 4px solid;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-card.completed { border-left-color: #34a853; }
+        .stat-card.pending { border-left-color: #fbbc04; }
+        .stat-card.high-priority { border-left-color: #ea4335; }
+        .stat-card.focus-time { border-left-color: #4285f4; }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #5f6368;
+            font-weight: 500;
+        }
+
+        /* Main Content */
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Task Sections */
+        .task-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 1px solid #e8eaed;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f3f4;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .priority-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .priority-high { background: #fce8e6; color: #d93025; }
+        .priority-medium { background: #fef7e0; color: #f29900; }
+        .priority-routine { background: #e3f2fd; color: #1a73e8; }
+
+        .add-task-btn {
+            background: linear-gradient(135deg, #4285f4, #34a853);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .add-task-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+        }
+
+        /* Task Items */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #e8eaed;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .task-item:hover {
+            background: #f1f3f4;
+            transform: translateX(2px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .task-item.completed {
+            background: linear-gradient(135deg, #e8f5e8, #c8e6c8);
+            border-color: #34a853;
+        }
+
+        .task-checkbox {
+            margin-right: 15px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #34a853;
+        }
+
+        .task-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .task-text {
+            font-size: 15px;
+            font-weight: 500;
+            color: #202124;
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: #5f6368;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: #5f6368;
+        }
+
+        .time-tracking {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .time-input {
+            width: 50px;
+            padding: 4px 6px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .delete-task {
+            background: none;
+            border: none;
+            color: #ea4335;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .task-item:hover .delete-task {
+            opacity: 1;
+        }
+
+        /* Time Blocks */
+        .time-blocks {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 1px solid #e8eaed;
+        }
+
+        .time-slot {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        .time-slot:last-child {
+            border-bottom: none;
+        }
+
+        .time-label {
+            min-width: 60px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #4285f4;
+            background: #e3f2fd;
+            padding: 6px 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .time-activity {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: border-color 0.3s;
+        }
+
+        .time-activity:focus {
+            border-color: #4285f4;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+        }
+
+        /* Quick Notes */
+        .notes-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 1px solid #e8eaed;
+        }
+
+        .notes-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 1px solid #dadce0;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            background: #f8f9fa;
+            transition: all 0.3s;
+        }
+
+        .notes-textarea:focus {
+            border-color: #4285f4;
+            background: white;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+        }
+
+        /* Journal Section */
+        .journal-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 1px solid #e8eaed;
+            margin: 30px;
+            margin-top: 0;
+        }
+
+        .journal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .journal-item h4 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #202124;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .journal-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 15px;
+            border: 1px solid #dadce0;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            background: #f8f9fa;
+            transition: all 0.3s;
+        }
+
+        .journal-textarea:focus {
+            border-color: #4285f4;
+            background: white;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+        }
+
+        /* Save Section */
+        .save-section {
+            background: white;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #e8eaed;
+        }
+
+        .save-btn {
+            background: linear-gradient(135deg, #34a853, #4285f4);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 168, 83, 0.3);
+        }
+
+        .export-btn {
+            background: white;
+            color: #5f6368;
+            border: 2px solid #dadce0;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin: 0 5px;
+        }
+
+        .export-btn:hover {
+            border-color: #4285f4;
+            color: #4285f4;
+            transform: translateY(-1px);
+        }
+
+        /* Status Messages */
+        .status-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .status-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .status-success {
+            background: linear-gradient(135deg, #34a853, #4caf50);
+        }
+
+        .status-error {
+            background: linear-gradient(135deg, #ea4335, #f44336);
+        }
+
+        /* Auto-save indicator */
+        .auto-save {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .auto-save.saving {
+            opacity: 1;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .journal-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .date-controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="user-info" id="userInfo">deepesh.retron@gmail.com</div>
+            <h1>📊 Daily Productivity Dashboard</h1>
+            <div class="header-subtitle">Track tasks, manage time, and reflect on your daily progress</div>
+            
+            <div class="date-controls">
+                <button class="date-nav-btn" onclick="navigateDate(-1)">← Previous Day</button>
+                <div class="current-date" id="currentDate"></div>
+                <button class="date-nav-btn" onclick="navigateDate(1)">Next Day →</button>
+            </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="progress-section">
+            <h2 class="progress-title">📈 Daily Progress Overview</h2>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+            <div class="progress-text" id="progressText">0% Complete - Let's get started!</div>
+            
+            <div class="stats-grid">
+                <div class="stat-card completed">
+                    <div class="stat-number" id="completedTasks">0</div>
+                    <div class="stat-label">✅ Completed Tasks</div>
+                </div>
+                <div class="stat-card pending">
+                    <div class="stat-number" id="pendingTasks">0</div>
+                    <div class="stat-label">⏳ Pending Tasks</div>
+                </div>
+                <div class="stat-card high-priority">
+                    <div class="stat-number" id="highPriorityTasks">0</div>
+                    <div class="stat-label">🔥 High Priority</div>
+                </div>
+                <div class="stat-card focus-time">
+                    <div class="stat-number" id="focusTime">0h</div>
+                    <div class="stat-label">⏰ Focus Time</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="left-panel">
+                <!-- High Priority Tasks -->
+                <div class="task-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            🔥 High Priority Tasks
+                            <span class="priority-badge priority-high">Urgent</span>
+                        </div>
+                        <button class="add-task-btn" onclick="addTask('high')">+ Add Task</button>
+                    </div>
+                    <div class="task-list" id="highTasks"></div>
+                </div>
+
+                <!-- Medium Priority Tasks -->
+                <div class="task-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            ⚡ Medium Priority Tasks
+                            <span class="priority-badge priority-medium">Important</span>
+                        </div>
+                        <button class="add-task-btn" onclick="addTask('medium')">+ Add Task</button>
+                    </div>
+                    <div class="task-list" id="mediumTasks"></div>
+                </div>
+
+                <!-- Routine Tasks -->
+                <div class="task-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            🔄 Daily Routine Tasks
+                            <span class="priority-badge priority-routine">Routine</span>
+                        </div>
+                        <button class="add-task-btn" onclick="addTask('routine')">+ Add Task</button>
+                    </div>
+                    <div class="task-list" id="routineTasks"></div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <!-- Time Blocks -->
+                <div class="time-blocks">
+                    <div class="section-header">
+                        <div class="section-title">⏰ Time Blocking Schedule</div>
+                    </div>
+                    <div id="timeBlocksList"></div>
+                </div>
+
+                <!-- Quick Notes -->
+                <div class="notes-section">
+                    <div class="section-header">
+                        <div class="section-title">📝 Quick Notes & Ideas</div>
+                    </div>
+                    <textarea class="notes-textarea" id="quickNotes" 
+                              placeholder="Capture quick thoughts, meeting notes, or sudden ideas here..."
+                              oninput="scheduleAutoSave()"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Journal Section -->
+        <div class="journal-section">
+            <div class="section-header">
+                <div class="section-title">📖 Daily Reflection Journal</div>
+            </div>
+            
+            <div class="journal-grid">
+                <div class="journal-item">
+                    <h4>✅ What went well today?</h4>
+                    <textarea class="journal-textarea" id="wentWell" 
+                              placeholder="Celebrate your wins, no matter how small. What made you feel accomplished or happy today?"
+                              oninput="scheduleAutoSave()"></textarea>
+                </div>
+                <div class="journal-item">
+                    <h4>🎯 What could be improved?</h4>
+                    <textarea class="journal-textarea" id="improvements" 
+                              placeholder="Identify challenges you faced and areas where you can grow. Be kind but honest with yourself."
+                              oninput="scheduleAutoSave()"></textarea>
+                </div>
+                <div class="journal-item">
+                    <h4>🧠 Key learnings today</h4>
+                    <textarea class="journal-textarea" id="learnings" 
+                              placeholder="What new insights, skills, or knowledge did you gain? What would you tell someone else about today?"
+                              oninput="scheduleAutoSave()"></textarea>
+                </div>
+                <div class="journal-item">
+                    <h4>🚀 Tomorrow's focus</h4>
+                    <textarea class="journal-textarea" id="tomorrowFocus" 
+                              placeholder="Set your intentions for tomorrow. What are your top 3 priorities? What do you want to accomplish?"
+                              oninput="scheduleAutoSave()"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Save Section -->
+        <div class="save-section">
+            <button class="save-btn" onclick="saveAllData()">💾 Save All Data</button>
+            <button class="export-btn" onclick="exportToCSV()">📊 Export CSV</button>
+            <button class="export-btn" onclick="generateReport()">📈 Generate Report</button>
+        </div>
+    </div>
+
+    <!-- Status Messages -->
+    <div id="statusMessage" class="status-message"></div>
+    <div id="autoSaveIndicator" class="auto-save">Auto-saving...</div>
+
+    <script>
+        // Configuration - REPLACE WITH YOUR ACTUAL APPS SCRIPT URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzU9a6op2lKR0co4fIS4nfIaSg9Ui9Yw-l6c-ejUxLMl6M0YYxr1hO6xyDA0__l8YzFMQ/exec';
+        
+        // Application state
+        let appState = {
+            currentDate: new Date().toISOString().split('T')[0],
+            tasks: {
+                high: [],
+                medium: [],
+                routine: []
+            },
+            timeBlocks: [],
+            nextTaskId: 1,
+            autoSaveTimeout: null,
+            lastSaved: null
+        };
+
+        // Initialize the application
+        function init() {
+            updateDateDisplay();
+            initializeTimeBlocks();
+            loadSampleData();
+            updateProgress();
+            
+            // Set up auto-save
+            setInterval(autoSave, 60000); // Auto-save every minute
+            
+            // Set up time display update
+            setInterval(updateDateDisplay, 60000);
+        }
+
+        // Update date display
+        function updateDateDisplay() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            document.getElementById('currentDate').textContent = dateStr;
+        }
+
+        // Initialize time blocks
+        function initializeTimeBlocks() {
+            const defaultBlocks = [
+                { time: '9:00', activity: 'Morning planning & email review' },
+                { time: '10:00', activity: 'Deep work - High priority tasks' },
+                { time: '12:00', activity: 'Lunch break & recharge' },
+                { time: '13:30', activity: 'Meetings & collaboration' },
+                { time: '15:00', activity: 'Medium priority tasks' },
+                { time: '16:30', activity: 'Routine tasks & admin' },
+                { time: '17:30', activity: 'Day wrap-up & tomorrow planning' }
+            ];
+            
+            appState.timeBlocks = defaultBlocks;
+            renderTimeBlocks();
+        }
+
+        // Render time blocks
+        function renderTimeBlocks() {
+            const container = document.getElementById('timeBlocksList');
+            container.innerHTML = '';
+            
+            appState.timeBlocks.forEach((block, index) => {
+                const timeSlot = document.createElement('div');
+                timeSlot.className = 'time-slot';
+                timeSlot.innerHTML = `
+                    <div class="time-label">${block.time}</div>
+                    <input type="text" class="time-activity" value="${block.activity}" 
+                           placeholder="What are you working on?" 
+                           onchange="updateTimeBlock(${index}, this.value)"
+                           oninput="scheduleAutoSave()">
+                `;
+                container.appendChild(timeSlot);
+            });
+        }
+
+        // Update time block
+        function updateTimeBlock(index, value) {
+            if (appState.timeBlocks[index]) {
+                appState.timeBlocks[index].activity = value;
+            }
+        }
+
+        // Load sample data
+        function loadSampleData() {
+            appState.tasks = {
+                high: [
+                    { id: 1, text: 'Complete quarterly presentation', estimated: '3h', actual: '2.5h', completed: false },
+                    { id: 2, text: 'Review and approve budget proposal', estimated: '1.5h', actual: '', completed: false }
+                ],
+                medium: [
+                    { id: 3, text: 'Update team documentation', estimated: '1h', actual: '', completed: false },
+                    { id: 4, text: 'Prepare for client call', estimated: '45m', actual: '30m', completed: true },
+                    { id: 5, text: 'Code review for new feature', estimated: '1h', actual: '', completed: false }
+                ],
+                routine: [
+                    { id: 6, text: 'Check and respond to emails', estimated: '30m', actual: '25m', completed: true },
+                    { id: 7, text: 'Daily team standup', estimated: '15m', actual: '15m', completed: true },
+                    { id: 8, text: 'Update project tracking board', estimated: '10m', actual: '', completed: false }
+                ]
+            };
+            appState.nextTaskId = 9;
+            renderAllTasks();
+        }
+
+        // Add new task
+        function addTask(priority) {
+            const taskText = prompt('Enter task description:');
+            if (taskText && taskText.trim()) {
+                const estimatedTime = prompt('Estimated time (e.g., 2h, 45m):') || '30m';
+                
+                const newTask = {
+                    id: appState.nextTaskId++,
+                    text: taskText.trim(),
+                    estimated: estimatedTime,
+                    actual: '',
+                    completed: false
+                };
+                
+                appState.tasks[priority].push(newTask);
+                renderAllTasks();
+                updateProgress();
+                scheduleAutoSave();
+                showMessage(`Task added to ${priority} priority!`, 'success');
+            }
+        }
+
+        // Render all tasks
+        function renderAllTasks() {
+            renderTasks('high', 'highTasks');
+            renderTasks('medium', 'mediumTasks');
+            renderTasks('routine', 'routineTasks');
+        }
+
+        // Render tasks for specific priority
+        function renderTasks(priority, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            if (appState.tasks[priority].length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #5f6368; padding: 20px; font-style: italic;">No tasks yet. Click "Add Task" to get started!</div>';
+                return;
+            }
+            
+            appState.tasks[priority].forEach(task => {
+                const taskDiv = document.createElement('div');
+                taskDiv.className = `task-item ${task.completed ? 'completed' : ''}`;
+                
+                taskDiv.innerHTML = `
+                    <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} 
+                           onchange="toggleTask(${task.id}, '${priority}')">
+                    <div class="task-content">
+                        <div class="task-text">${task.text}</div>
+                        <div class="task-meta">
+                            <div class="time-tracking">
+                                <span>Est: ${task.estimated}</span>
+                                <span>Actual:</span>
+                                <input type="text" class="time-input" value="${task.actual}" 
+                                       placeholder="0h" onchange="updateTaskTime(${task.id}, '${priority}', this.value)">
+                            </div>
+                        </div>
+                    </div>
+                    <button class="delete-task" onclick="deleteTask(${task.id}, '${priority}')" title="Delete task">🗑️</button>
+                `;
+                
+                container.appendChild(taskDiv);
+            });
+        }
+
+        // Toggle task completion
+        function toggleTask(taskId, priority) {
+            const task = appState.tasks[priority].find(t => t.id === taskId);
+            if (task) {
+                task.completed = !task.completed;
+                renderAllTasks();
+                updateProgress();
+                scheduleAutoSave();
+                
+                const action = task.completed ? 'completed' : 'reopened';
+                showMessage(`Task ${action}! 🎉`, 'success');
+            }
+        }
+
+        // Update task time
+        function updateTaskTime(taskId, priority, actualTime) {
+            const task = appState.tasks[priority].find(t => t.id === taskId);
+            if (task) {
+                task.actual = actualTime;
+                updateFocusTime();
+                scheduleAutoSave();
+            }
+        }
+
+        // Delete task
+        function deleteTask(taskId, priority) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                appState.tasks[priority] = appState.tasks[priority].filter(t => t.id !== taskId);
+                renderAllTasks();
+                updateProgress();
+                scheduleAutoSave();
+                showMessage('Task deleted!', 'success');
+            }
+        }
+
+        // Update progress statistics
+        function updateProgress() {
+            const allTasks = Object.values(appState.tasks).flat();
+            const completedTasks = allTasks.filter(task => task.completed);
+            const pendingTasks = allTasks.filter(task => !task.completed);
+            const highPriorityTasks = appState.tasks.high.filter(task => !task.completed);
+            
+            const totalCount = allTasks.length;
+            const completedCount = completedTasks.length;
+            const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+            
+            // Update progress bar
+            document.getElementById('progressBar').style.width = percentage + '%';
+            
+            // Update progress text
+            const progressText = document.getElementById('progressText');
+            if (percentage === 0) {
+                progressText.textContent = "0% Complete - Let's get started! 🚀";
+            } else if (percentage < 25) {
+                progressText.textContent = `${percentage}% Complete - Great start! Keep going! 💪`;
+            } else if (percentage < 50) {
+                progressText.textContent = `${percentage}% Complete - You're making good progress! 📈`;
+            } else if (percentage < 75) {
+                progressText.textContent = `${percentage}% Complete - More than halfway there! 🎯`;
+            } else if (percentage < 100) {
+                progressText.textContent = `${percentage}% Complete - Almost done! Final push! 🏃‍♂️`;
+            } else {
+                progressText.textContent = `${percentage}% Complete - All tasks done! Excellent work! 🎉`;
+            }
+            
+            // Update stat cards
+            document.getElementById('completedTasks').textContent = completedCount;
+            document.getElementById('pendingTasks').textContent = pendingTasks.length;
+            document.getElementById('highPriorityTasks').textContent = highPriorityTasks.length;
+            
+            updateFocusTime();
+        }
+
+        // Update focus time calculation
+        function updateFocusTime() {
+            const allTasks = Object.values(appState.tasks).flat();
+            let totalMinutes = 0;
+            
+            allTasks.forEach(task => {
+                if (task.actual) {
+                    const time = task.actual.toLowerCase();
+                    if (time.includes('h')) {
+                        const hours = parseFloat(time.replace('h', ''));
+                        totalMinutes += hours * 60;
+                    } else if (time.includes('m')) {
+                        const minutes = parseFloat(time.replace('m', ''));
+                        totalMinutes += minutes;
+                    }
+                }
+            });
+            
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            const focusTimeText = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+            
+            document.getElementById('focusTime').textContent = focusTimeText;
+        }
+
+        // Date navigation
+        function navigateDate(direction) {
+            const currentDate = new Date(appState.currentDate);
+            currentDate.setDate(currentDate.getDate() + direction);
+            appState.currentDate = currentDate.toISOString().split('T')[0];
+            
+            // Save current data before switching
+            saveAllData();
+            
+            // Load data for new date (for demo, we'll just clear tasks)
+            appState.tasks = { high: [], medium: [], routine: [] };
+            clearJournalEntries();
+            renderAllTasks();
+            updateProgress();
+            
+            const dateStr = currentDate.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric', 
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            showMessage(`Switched to ${dateStr}`, 'success');
+        }
+
+        // Clear journal entries
+        function clearJournalEntries() {
+            document.getElementById('quickNotes').value = '';
+            document.getElementById('wentWell').value = '';
+            document.getElementById('improvements').value = '';
+            document.getElementById('learnings').value = '';
+            document.getElementById('tomorrowFocus').value = '';
+        }
+
+        // Schedule auto-save
+        function scheduleAutoSave() {
+            if (appState.autoSaveTimeout) {
+                clearTimeout(appState.autoSaveTimeout);
+            }
+            
+            appState.autoSaveTimeout = setTimeout(() => {
+                autoSave();
+            }, 3000); // Auto-save 3 seconds after last change
+        }
+
+        // Auto-save function
+        function autoSave() {
+            const autoSaveIndicator = document.getElementById('autoSaveIndicator');
+            autoSaveIndicator.classList.add('saving');
+            
+            saveAllData(true).finally(() => {
+                setTimeout(() => {
+                    autoSaveIndicator.classList.remove('saving');
+                }, 1000);
+            });
+        }
+
+        // Save all data - IMPROVED ERROR HANDLING
+        async function saveAllData(isAutoSave = false) {
+            try {
+                if (!isAutoSave) {
+                    showMessage('Saving all data...', 'success');
+                }
+                
+                // Collect journal data (always works)
+                const journalData = {
+                    date: appState.currentDate,
+                    user: 'deepesh.retron@gmail.com',
+                    quickNotes: document.getElementById('quickNotes').value || '',
+                    wentWell: document.getElementById('wentWell').value || '',
+                    improvements: document.getElementById('improvements').value || '',
+                    learnings: document.getElementById('learnings').value || '',
+                    tomorrowFocus: document.getElementById('tomorrowFocus').value || ''
+                };
+
+                // Safely prepare tasks and timeBlocks data
+                let tasksString = '{"high":[],"medium":[],"routine":[]}';
+                let timeBlocksString = '[]';
+                
+                try {
+                    // Validate appState.tasks exists and has the right structure
+                    if (appState.tasks && typeof appState.tasks === 'object') {
+                        // Ensure each priority array exists
+                        if (!appState.tasks.high) appState.tasks.high = [];
+                        if (!appState.tasks.medium) appState.tasks.medium = [];
+                        if (!appState.tasks.routine) appState.tasks.routine = [];
+                        
+                        tasksString = JSON.stringify(appState.tasks);
+                    }
+                } catch (e) {
+                    console.error('Error preparing tasks:', e);
+                    tasksString = '{"high":[],"medium":[],"routine":[]}';
+                }
+                
+                try {
+                    if (appState.timeBlocks && Array.isArray(appState.timeBlocks)) {
+                        timeBlocksString = JSON.stringify(appState.timeBlocks);
+                    }
+                } catch (e) {
+                    console.error('Error preparing timeBlocks:', e);
+                    timeBlocksString = '[]';
+                }
+
+                // Prepare URL parameters
+                const params = new URLSearchParams({
+                    action: 'save',
+                    date: journalData.date,
+                    user: journalData.user,
+                    quickNotes: journalData.quickNotes,
+                    wentWell: journalData.wentWell,
+                    improvements: journalData.improvements,
+                    learnings: journalData.learnings,
+                    tomorrowFocus: journalData.tomorrowFocus,
+                    tasks: tasksString,
+                    timeBlocks: timeBlocksString
+                });
+                
+                console.log('Saving data with params:', {
+                    ...journalData,
+                    tasks: tasksString,
+                    timeBlocks: timeBlocksString
+                });
+                
+                const response = await fetch(SCRIPT_URL + '?' + params);
+                const result = await response.text();
+                
+                console.log('Save response:', result);
+                
+                if (result.includes('SUCCESS')) {
+                    appState.lastSaved = new Date();
+                    if (!isAutoSave) {
+                        showMessage('✅ All data saved successfully!', 'success');
+                    }
+                    return true;
+                } else {
+                    throw new Error(result);
+                }
+                
+            } catch (error) {
+                console.error('Save error:', error);
+                const errorMessage = error.message || 'Unknown error occurred';
+                
+                if (!isAutoSave) {
+                    showMessage(`❌ Save error: ${errorMessage}`, 'error');
+                }
+                
+                return false;
+            }
+        }
+
+        // Export to CSV
+        function exportToCSV() {
+            const allTasks = Object.values(appState.tasks).flat();
+            let csvContent = "Date,Priority,Task,Estimated,Actual,Completed,Status\n";
+            
+            Object.keys(appState.tasks).forEach(priority => {
+                appState.tasks[priority].forEach(task => {
+                    const status = task.completed ? 'Completed' : 'Pending';
+                    csvContent += `${appState.currentDate},${priority},"${task.text}",${task.estimated},${task.actual},${task.completed},${status}\n`;
+                });
+            });
+            
+            // Add journal data
+            csvContent += "\n\nJournal Entries\n";
+            csvContent += "Field,Content\n";
+            csvContent += `"Quick Notes","${document.getElementById('quickNotes').value}"\n`;
+            csvContent += `"Went Well","${document.getElementById('wentWell').value}"\n`;
+            csvContent += `"Improvements","${document.getElementById('improvements').value}"\n`;
+            csvContent += `"Learnings","${document.getElementById('learnings').value}"\n`;
+            csvContent += `"Tomorrow Focus","${document.getElementById('tomorrowFocus').value}"\n`;
+            
+            downloadFile(csvContent, `daily-report-${appState.currentDate}.csv`, 'text/csv');
+            showMessage('📊 Report exported successfully!', 'success');
+        }
+
+        // Generate comprehensive report
+        function generateReport() {
+            const allTasks = Object.values(appState.tasks).flat();
+            const completedTasks = allTasks.filter(task => task.completed);
+            const productivity = allTasks.length > 0 ? Math.round((completedTasks.length / allTasks.length) * 100) : 0;
+            
+            let report = `Daily Productivity Report - ${appState.currentDate}\n`;
+            report += `Generated: ${new Date().toLocaleString()}\n`;
+            report += `User: deepesh.retron@gmail.com\n\n`;
+            
+            report += `📊 SUMMARY\n`;
+            report += `Overall Productivity: ${productivity}%\n`;
+            report += `Total Tasks: ${allTasks.length}\n`;
+            report += `Completed Tasks: ${completedTasks.length}\n`;
+            report += `Pending Tasks: ${allTasks.filter(task => !task.completed).length}\n\n`;
+            
+            report += `📋 TASK BREAKDOWN\n`;
+            Object.keys(appState.tasks).forEach(priority => {
+                const tasks = appState.tasks[priority];
+                const completed = tasks.filter(task => task.completed).length;
+                report += `${priority.toUpperCase()}: ${completed}/${tasks.length} completed\n`;
+                
+                tasks.forEach(task => {
+                    const status = task.completed ? '✅' : '⏳';
+                    report += `  ${status} ${task.text} (Est: ${task.estimated}, Actual: ${task.actual || 'N/A'})\n`;
+                });
+                report += '\n';
+            });
+            
+            report += `📝 JOURNAL REFLECTION\n`;
+            report += `What went well: ${document.getElementById('wentWell').value || 'No entry'}\n\n`;
+            report += `Areas for improvement: ${document.getElementById('improvements').value || 'No entry'}\n\n`;
+            report += `Key learnings: ${document.getElementById('learnings').value || 'No entry'}\n\n`;
+            report += `Tomorrow's focus: ${document.getElementById('tomorrowFocus').value || 'No entry'}\n\n`;
+            
+            report += `⏰ TIME BLOCKS\n`;
+            appState.timeBlocks.forEach(block => {
+                report += `${block.time}: ${block.activity}\n`;
+            });
+            
+            downloadFile(report, `productivity-report-${appState.currentDate}.txt`, 'text/plain');
+            showMessage('📈 Comprehensive report generated!', 'success');
+        }
+
+        // Download file helper
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', filename);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Show status message
+        function showMessage(message, type = 'success') {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message status-${type} show`;
+            
+            setTimeout(() => {
+                statusDiv.classList.remove('show');
+            }, 4000);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            // Ctrl/Cmd + S to save
+            if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+                event.preventDefault();
+                saveAllData();
+            }
+            
+            // Ctrl/Cmd + E to export
+            if ((event.ctrlKey || event.metaKey) && event.key === 'e') {
+                event.preventDefault();
+                exportToCSV();
+            }
+            
+            // Arrow keys for date navigation (with Alt)
+            if (event.altKey) {
+                if (event.key === 'ArrowLeft') {
+                    event.preventDefault();
+                    navigateDate(-1);
+                } else if (event.key === 'ArrowRight') {
+                    event.preventDefault();
+                    navigateDate(1);
+                }
+            }
+        });
+
+        // Initialize application when page loads
+        document.addEventListener('DOMContentLoaded', init);
+        
+        // Add some motivational messages
+        const motivationalMessages = [
+            "Great job staying organized! 🌟",
+            "You're building great habits! 💪", 
+            "Every task completed is progress! 🎯",
+            "Consistency is key to success! 🔑",
+            "You're doing amazing work! ⭐",
+            "Keep up the excellent momentum! 🚀"
+        ];
+
+        // Show random motivational message occasionally
+        setInterval(() => {
+            if (Math.random() < 0.1) { // 10% chance every check
+                const message = motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)];
+                showMessage(message, 'success');
+            }
+        }, 300000); // Check every 5 minutes
+    </script>
+</body>
+</html>
